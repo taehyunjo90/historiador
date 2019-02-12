@@ -204,8 +204,6 @@ class DataProcessor():
         plt.show()
 
 
-
-
 if __name__ == "__main__":
     code = "005930"
     start_date = "20080101"
