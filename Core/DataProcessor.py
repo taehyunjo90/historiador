@@ -169,6 +169,12 @@ class DataProcessor():
         result = result.set_index('Symbol').iloc[:, 1:]
         result.columns = pd.to_datetime(result.columns)
         result = result.loc[:, (result.columns >= start) & (result.columns <= end)]
+
+        result = result.T
+        result = result.iloc[:, 0].str.replace(",", "")
+        result[result == ""] = np.nan
+        result = result.astype(float, errors='ignore')
+
         return result
 
     def getHistoricalPBR(self, code, start_date, end_date):
@@ -177,25 +183,37 @@ class DataProcessor():
                            CONFIG.PBR_RANGE_ACCNTS, 1)
 
         # 시가총액 부분을 개선할 수 있음 <자사주 고려 시가총액>
-        df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date).T
-        df_cap = df_cap.iloc[:, 0].str.replace(",", "")
-        df_cap[df_cap == ""] = np.nan
-        df_cap = df_cap.astype(float, errors='ignore')
+        df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
 
         df_process.loc[:, '시가총액'] = df_cap.values
         df_process.loc[:, 'PBR'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '총자본(천원)'] * 1000
-
         df_process.loc[:,'PBR'].plot()
         plt.show()
 
+    def getHistoricalPER(self, code, start_date, end_date, range_years):
+        df_process, df_to_map = \
+            dp.getDFmapped(code, start_date, end_date, CONFIG.PER_DICT_ACCNTS, CONFIG.PER_SPOT_ACNTS,
+                           CONFIG.PER_RANGE_ACCNTS, range_years)
+
+        # 시가총액 부분을 개선할 수 있음 <자사주 고려 시가총액>
+        df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
+
+        df_process.loc[:, '시가총액'] = df_cap.values
+        df_process.loc[:, 'PER'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '당기순이익(천원)'] * 1000
+        df_process.loc[:, 'PER'].plot()
+        plt.show()
+
+
+
 
 if __name__ == "__main__":
-    code = "001080"
+    code = "005930"
     start_date = "20080101"
     end_date = "20190131"
 
     dp = DataProcessor()
-    dp.getHistoricalPBR(code, start_date, end_date)
+    # dp.getHistoricalPBR(code, start_date, end_date)
+    dp.getHistoricalPER(code, start_date, end_date, 7)
 
 
 
