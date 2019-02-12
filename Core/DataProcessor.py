@@ -205,13 +205,13 @@ class DataProcessor():
 
 
 if __name__ == "__main__":
-    code = "005930"
+    code = "069960"
     start_date = "20080101"
     end_date = "20190131"
 
     dp = DataProcessor()
-    # dp.getHistoricalPBR(code, start_date, end_date)
-    dp.getHistoricalPER(code, start_date, end_date, 7)
+    dp.getHistoricalPBR(code, start_date, end_date)
+    # dp.getHistoricalPER(code, start_date, end_date, 7)
 
 
 
