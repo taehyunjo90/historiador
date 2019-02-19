@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import glob
 import os
 import CONFIG
@@ -205,13 +205,13 @@ class DataProcessor():
 
 
 if __name__ == "__main__":
-    code = "069960"
-    start_date = "20080101"
+    code = "012700"
+    start_date = "20130501"
     end_date = "20190131"
 
     dp = DataProcessor()
     dp.getHistoricalPBR(code, start_date, end_date)
-    # dp.getHistoricalPER(code, start_date, end_date, 7)
+    # dp.getHistoricalPER(code, start_date, end_date, 5)
 
 
 
