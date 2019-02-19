@@ -132,6 +132,7 @@ class DataProcessor():
     def getDFmapped(self, code, start_date, end_date,\
                     dict_accounts, list_spot_accounts, list_range_accounts, range_years):
         df_process = self.getOpDaysByRange(start_date, end_date, range_years)
+        # print(df_process)
         list_year_quater = getListYearQuater(df_process)
 
         df_to_map = self.getMappingDF(code, list_year_quater, dict_accounts)
@@ -179,7 +180,7 @@ class DataProcessor():
 
     def getHistoricalPBR(self, code, start_date, end_date):
         df_process, df_to_map = \
-            dp.getDFmapped(code, start_date, end_date, CONFIG.PBR_DICT_ACCNTS, CONFIG.PBR_SPOT_ACNTS,
+            self.getDFmapped(code, start_date, end_date, CONFIG.PBR_DICT_ACCNTS, CONFIG.PBR_SPOT_ACNTS,
                            CONFIG.PBR_RANGE_ACCNTS, 1)
 
         # 시가총액 부분을 개선할 수 있음 <자사주 고려 시가총액>
@@ -187,12 +188,15 @@ class DataProcessor():
 
         df_process.loc[:, '시가총액'] = df_cap.values
         df_process.loc[:, 'PBR'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '총자본(천원)'] * 1000
-        df_process.loc[:,'PBR'].plot()
-        plt.show()
+
+        return df_process
+        # df_process.loc[:,'PBR'].plot()
+        # plt.show()
 
     def getHistoricalPER(self, code, start_date, end_date, range_years):
+        # print(1)
         df_process, df_to_map = \
-            dp.getDFmapped(code, start_date, end_date, CONFIG.PER_DICT_ACCNTS, CONFIG.PER_SPOT_ACNTS,
+            self.getDFmapped(code, start_date, end_date, CONFIG.PER_DICT_ACCNTS, CONFIG.PER_SPOT_ACNTS,
                            CONFIG.PER_RANGE_ACCNTS, range_years)
 
         # 시가총액 부분을 개선할 수 있음 <자사주 고려 시가총액>
@@ -200,8 +204,10 @@ class DataProcessor():
 
         df_process.loc[:, '시가총액'] = df_cap.values
         df_process.loc[:, 'PER'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '당기순이익(천원)'] * 1000
-        df_process.loc[:, 'PER'].plot()
-        plt.show()
+
+        return df_process
+        # df_process.loc[:, 'PER'].plot()
+        # plt.show()
 
 
 if __name__ == "__main__":
@@ -210,7 +216,8 @@ if __name__ == "__main__":
     end_date = "20190131"
 
     dp = DataProcessor()
-    dp.getHistoricalPBR(code, start_date, end_date)
+    df= dp.getHistoricalPBR(code, start_date, end_date)
+    print(df.head())
     # dp.getHistoricalPER(code, start_date, end_date, 5)
 
 
