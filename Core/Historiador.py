@@ -41,8 +41,9 @@ class Historiador():
 
         df_process.loc[:, 'ROE'] = df_process.loc[:, '당기순이익(천원)'] / df_process.loc[:, '총자본(천원)'] * 100
 
-        df_process.loc[:, 'ROE'].plot()
-        plt.show()
+        return df_process
+        # df_process.loc[:, 'ROE'].plot()
+        # plt.show()
 
     def getHistoricalPBRandROE(self, code, start_date, end_date, range_years, csd_trea = True):
         df_process, df_to_map = \
@@ -54,21 +55,9 @@ class Historiador():
         df_process.loc[:, '시가총액'] = df_cap.values
         df_process.loc[:, 'PBR'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '총자본(천원)'] * 1000
         df_process.loc[:, 'ROE'] = df_process.loc[:, '당기순이익(천원)'] / df_process.loc[:, '총자본(천원)'] * 100
-        print(df_process.describe())
 
+        return df_process
 
-
-        fig, ax1 = plt.subplots()
-
-        ax2 = ax1.twinx()
-        ax1.plot(df_process.loc[:, 'PBR'].index, df_process.loc[:, 'PBR'].values, 'g-')
-        ax2.plot(df_process.loc[:, 'ROE'].index, df_process.loc[:, 'ROE'].values, 'b-')
-
-        ax1.set_xlabel('X data')
-        ax1.set_ylabel('Y1 data', color='g')
-        ax2.set_ylabel('Y2 data', color='b')
-
-        plt.show()
 
 
 if __name__ == "__main__":
@@ -77,6 +66,6 @@ if __name__ == "__main__":
     end_date = "20190131"
 
     hs = Historiador()
-    # df= dp.getHistoricalPBR(code, start_date, end_date)
-    # print(df.head())
-    hs.getHistoricalPBRandROE(code, start_date, end_date, 1, True)
+    df = hs.getHistoricalPBR(code, start_date, end_date, True)
+    print(df.head())
+    # hs.getHistoricalPBRandROE(code, start_date, end_date, 1, True)

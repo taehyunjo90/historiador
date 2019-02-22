@@ -47,7 +47,7 @@ class DataProcessor():
                 self.df_opdays = pd.to_datetime(df_opdays_temp.iloc[:,0])
             elif name == "종목정보":
                 self.df_codeinfo = pd.read_csv(file, engine='python', index_col=0)
-        logger.logger.info("Read operating days and stock name/code info successfully.")
+        logger.logger.debug("Read operating days and stock name/code info successfully.")
 
     def getOpDaysByRange(self, start_date, end_date, range_years):
         range = self.df_opdays[(self.df_opdays >= start_date) & (self.df_opdays <= end_date)]
@@ -180,12 +180,12 @@ class DataProcessor():
 
     def getCap(self, code, start_date, end_date, csd_trea=True):
         # csd_trea : 자사주 매입을 고려한 시가총액
-        if csd_trea == True:
+        if csd_trea == False:
             df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
-        elif csd_trea == False:
-            df_price = dp.getStockInfoByRange("종가", code, start_date, end_date)
-            df_stocks = dp.getStockInfoByRange("보통주수", code, start_date, end_date)
-            df_trea = dp.getStockInfoByRange("자사주수", code, start_date, end_date)
+        elif csd_trea == True:
+            df_price = self.getStockInfoByRange("종가", code, start_date, end_date)
+            df_stocks = self.getStockInfoByRange("보통주수", code, start_date, end_date)
+            df_trea = self.getStockInfoByRange("자사주수", code, start_date, end_date)
             df_cap_trea = df_price * (df_stocks - df_trea)
             df_cap_trea = df_cap_trea / 10 ** 6
             df_cap = df_cap_trea

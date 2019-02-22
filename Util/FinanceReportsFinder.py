@@ -27,22 +27,26 @@ def getRangeYearQuaterByDate(date, range_years, option):
 
     if option == "start":
         return year_quater
+
     elif option == "end":
-        year = int(year_quater.split("_")[0])  # int
-        quater = int(year_quater.split("_")[-1][0])  # int
-
-        # 만약에 2012_3Q이고 range_years가 3이라면 2009_4Q를 찾아주면 된다.
-        # 만약에 2012_4Q이고 range_year가 2이라면 2011_1Q를 찾아주면 된다.
-        r_year = year - range_years
-
-        if quater == 4:
-            r_year = r_year + 1
-            r_quater = 1
+        if range_years == 0:
+            return year_quater
         else:
-            r_quater = quater + 1
+            year = int(year_quater.split("_")[0])  # int
+            quater = int(year_quater.split("_")[-1][0])  # int
 
-        year_quater = str(r_year) + "_" + str(r_quater) + "Q"
-        return year_quater
+            # 만약에 2012_3Q이고 range_years가 3이라면 2009_4Q를 찾아주면 된다.
+            # 만약에 2012_4Q이고 range_year가 2이라면 2011_1Q를 찾아주면 된다.
+            r_year = year - range_years
+
+            if quater == 4:
+                r_year = r_year + 1
+                r_quater = 1
+            else:
+                r_quater = quater + 1
+
+            year_quater = str(r_year) + "_" + str(r_quater) + "Q"
+            return year_quater
 
     # list_year_quater = []
     #
