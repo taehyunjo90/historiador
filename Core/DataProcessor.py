@@ -8,8 +8,6 @@ import csv
 from Util.FinanceReportsFinder import *
 from Util.Logger import myLogger
 
-import matplotlib.pyplot as plt
-
 logger = myLogger("DataProcessor")
 
 class DataProcessor():
@@ -62,6 +60,8 @@ class DataProcessor():
 
     def getSpotFinancialData(self, code, year_quater, FR_type, list_accounts):
         """
+        code,
+
         :param FR_type: BS, IS, CFS
         :param year_quater: YYYY_NQ 스타일
         :param list_accounts: 계정명 (정확해야함)
@@ -118,7 +118,7 @@ class DataProcessor():
         # to int
         for c in df_to_map.columns:
             df_to_map.loc[:, c] = df_to_map.loc[:, c].str.replace(",", "")
-            df_to_map.loc[:, c][df_to_map.loc[:, c] == ""] = np.nan
+            df_to_map.loc[:, c] = df_to_map.loc[:,c].replace("", np.nan)
             df_to_map.loc[:, c] = df_to_map.loc[:, c].astype(float, errors = 'ignore')
 
         for accnt in list_spot_accounts:
@@ -178,47 +178,75 @@ class DataProcessor():
 
         return result
 
-    def getHistoricalPBR(self, code, start_date, end_date):
-        df_process, df_to_map = \
-            self.getDFmapped(code, start_date, end_date, CONFIG.PBR_DICT_ACCNTS, CONFIG.PBR_SPOT_ACNTS,
-                           CONFIG.PBR_RANGE_ACCNTS, 1)
+    def getCap(self, code, start_date, end_date, csd_trea=True):
+        # csd_trea : 자사주 매입을 고려한 시가총액
+        if csd_trea == True:
+            df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
+        elif csd_trea == False:
+            df_price = dp.getStockInfoByRange("종가", code, start_date, end_date)
+            df_stocks = dp.getStockInfoByRange("보통주수", code, start_date, end_date)
+            df_trea = dp.getStockInfoByRange("자사주수", code, start_date, end_date)
+            df_cap_trea = df_price * (df_stocks - df_trea)
+            df_cap_trea = df_cap_trea / 10 ** 6
+            df_cap = df_cap_trea
 
-        # 시가총액 부분을 개선할 수 있음 <자사주 고려 시가총액>
-        df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
+        return df_cap
 
-        df_process.loc[:, '시가총액'] = df_cap.values
-        df_process.loc[:, 'PBR'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '총자본(천원)'] * 1000
 
-        return df_process
-        # df_process.loc[:,'PBR'].plot()
-        # plt.show()
+    # def getHistoricalPBR(self, code, start_date, end_date):
+    #     df_process, df_to_map = \
+    #         self.getDFmapped(code, start_date, end_date, CONFIG.PBR_DICT_ACCNTS, CONFIG.PBR_SPOT_ACNTS,
+    #                        CONFIG.PBR_RANGE_ACCNTS, 1)
+    #
+    #     # 시가총액 부분을 개선할 수 있음 <자사주 고려 시가총액>
+    #     df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
+    #
+    #     df_process.loc[:, '시가총액'] = df_cap.values
+    #     df_process.loc[:, 'PBR'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '총자본(천원)'] * 1000
+    #
+    #     return df_process
+    #     # df_process.loc[:,'PBR'].plot()
+    #     # plt.show()
+    #
+    # def getHistoricalPER(self, code, start_date, end_date, range_years):
+    #     # print(1)
+    #     df_process, df_to_map = \
+    #         self.getDFmapped(code, start_date, end_date, CONFIG.PER_DICT_ACCNTS, CONFIG.PER_SPOT_ACNTS,
+    #                        CONFIG.PER_RANGE_ACCNTS, range_years)
+    #
+    #     # 시가총액 부분을 개선할 수 있음 <자사주 고려 시가총액>
+    #     df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
+    #
+    #     df_process.loc[:, '시가총액'] = df_cap.values
+    #     df_process.loc[:, 'PER'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '당기순이익(천원)'] * 1000
+    #
+    #     return df_process
+    #     # df_process.loc[:, 'PER'].plot()
+    #     # plt.show()
+    #
+    # def getHistoricalROE(self, code, start_date, end_date, range_years):
+    #
+    #     df_process, df_to_map = \
+    #         self.getDFmapped(code, start_date, end_date, CONFIG.ROE_DICT_ACCNTS, CONFIG.ROE_SPOT_ACNTS,
+    #                        CONFIG.ROE_RANGE_ACCNTS, range_years)
+    #
+    #     df_process.loc[:, 'ROE'] = df_process.loc[:, '당기순이익(천원)'] / df_process.loc[:, '총자본(천원)'] * 100
+    #
+    #     # return df_process
+    #     df_process.loc[:, 'ROE'].plot()
+    #     plt.show()
 
-    def getHistoricalPER(self, code, start_date, end_date, range_years):
-        # print(1)
-        df_process, df_to_map = \
-            self.getDFmapped(code, start_date, end_date, CONFIG.PER_DICT_ACCNTS, CONFIG.PER_SPOT_ACNTS,
-                           CONFIG.PER_RANGE_ACCNTS, range_years)
-
-        # 시가총액 부분을 개선할 수 있음 <자사주 고려 시가총액>
-        df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
-
-        df_process.loc[:, '시가총액'] = df_cap.values
-        df_process.loc[:, 'PER'] = df_process.loc[:, '시가총액'] / df_process.loc[:, '당기순이익(천원)'] * 1000
-
-        return df_process
-        # df_process.loc[:, 'PER'].plot()
-        # plt.show()
 
 
 if __name__ == "__main__":
-    code = "012700"
-    start_date = "20130501"
+    code = "049430"
+    start_date = "20080101"
     end_date = "20190131"
 
     dp = DataProcessor()
-    df= dp.getHistoricalPBR(code, start_date, end_date)
-    print(df.head())
-    # dp.getHistoricalPER(code, start_date, end_date, 5)
+    # df= dp.getHistoricalPBR(code, start_date, end_date)
+    # print(df.head())
+    dp.getHistoricalROE(code, start_date, end_date, 3)
 
 
 

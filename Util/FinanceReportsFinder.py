@@ -22,34 +22,51 @@ def getSpotYearQuaterByDate(date):
 
     return str(r_year) + "_" + r_quater
 
-def getRangeYearQuaterByDate(date, years, option):
+def getRangeYearQuaterByDate(date, range_years, option):
     year_quater = getSpotYearQuaterByDate(date)
-    year = int(year_quater.split("_")[0]) # int
-    quater = int(year_quater.split("_")[-1][0]) # int
-
-    list_year_quater = []
-
-    if quater == 4:
-        for i in range(years):
-            r_year = year - i
-            list_year_quater.append(str(r_year) + "_4Q")
-    else:
-        for i in range(years + 2):
-            if i == 0:
-                r_year = year - i
-                list_year_quater.append(str(r_year) + "_" + str(quater) +"Q")
-            elif i == years + 1:
-                r_year = year - i + 1
-                list_year_quater.append(str(r_year) + "_" + str(quater) + "Q")
-            else:
-                r_year = year - i
-                list_year_quater.append(str(r_year) + "_4Q")
 
     if option == "start":
-        ret = list_year_quater[0]
+        return year_quater
     elif option == "end":
-        ret = list_year_quater[-1]
-    return ret
+        year = int(year_quater.split("_")[0])  # int
+        quater = int(year_quater.split("_")[-1][0])  # int
+
+        # 만약에 2012_3Q이고 range_years가 3이라면 2009_4Q를 찾아주면 된다.
+        # 만약에 2012_4Q이고 range_year가 2이라면 2011_1Q를 찾아주면 된다.
+        r_year = year - range_years
+
+        if quater == 4:
+            r_year = r_year + 1
+            r_quater = 1
+        else:
+            r_quater = quater + 1
+
+        year_quater = str(r_year) + "_" + str(r_quater) + "Q"
+        return year_quater
+
+    # list_year_quater = []
+    #
+    # if quater == 4:
+    #     for i in range(years):
+    #         r_year = year - i
+    #         list_year_quater.append(str(r_year) + "_4Q")
+    # else:
+    #     for i in range(years + 2):
+    #         if i == 0:
+    #             r_year = year - i
+    #             list_year_quater.append(str(r_year) + "_" + str(quater) +"Q")
+    #         elif i == years + 1:
+    #             r_year = year - i + 1
+    #             list_year_quater.append(str(r_year) + "_" + str(quater) + "Q")
+    #         else:
+    #             r_year = year - i
+    #             list_year_quater.append(str(r_year) + "_4Q")
+    #
+    # if option == "start":
+    #     ret = list_year_quater[0]
+    # elif option == "end":
+    #     ret = list_year_quater[-1]
+
 
 
 def getListYearQuater(df_process):
