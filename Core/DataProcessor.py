@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import glob
 import os
+
 import CONFIG
 import csv
 
@@ -9,6 +10,7 @@ from Util.FinanceReportsFinder import *
 from Util.Logger import myLogger
 
 logger = myLogger("DataProcessor")
+# LIMIT_PCT_CHG_RANGE = [-30, 30]
 
 class DataProcessor():
     def __init__(self):
@@ -178,7 +180,14 @@ class DataProcessor():
 
         return result
 
-    def getCap(self, code, start_date, end_date, csd_trea=True):
+    def getCap(self, code, start_date, end_date, csd_trea=True, fixcap=False):
+        if fixcap == True:
+            return self.getAbnorFixedCap(code, start_date, end_date, csd_trea)
+        elif fixcap == False:
+            return self.getNorCap(code,start_date,end_date,csd_trea)
+
+
+    def getNorCap(self, code, start_date, end_date, csd_trea=True):
         # csd_trea : 자사주 매입을 고려한 시가총액
         if csd_trea == False:
             df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
@@ -189,8 +198,74 @@ class DataProcessor():
             df_cap_trea = df_price * (df_stocks - df_trea)
             df_cap_trea = df_cap_trea / 10 ** 6
             df_cap = df_cap_trea
-
         return df_cap
+
+    def getAbnorFixedCap(self, code, start_date, end_date, csd_trea = True):
+        LIMIT_PCT_CHG_RANGE = [-30, 30]
+        # 일단 수직적 이상만 탐지하여 개선
+
+        # Considering treasury stocks cap.
+        df_price = self.getStockInfoByRange("종가", code, start_date, end_date)
+        df_stocks = self.getStockInfoByRange("보통주수", code, start_date, end_date)
+        df_trea = self.getStockInfoByRange("자사주수", code, start_date, end_date)
+        df_cap_trea = df_price * (df_stocks - df_trea)
+        df_cap_trea = df_cap_trea / 10 ** 6
+
+        # Not consdiering treasury stocks cap.
+        df_cap = self.getStockInfoByRange("시가총액", code, start_date, end_date)
+
+        df_cap_total = pd.concat([df_cap, df_cap_trea], axis=1)
+        df_cap_pct_chg = df_cap_total.pct_change(1) * 100
+        len_cols = len(df_cap_pct_chg.columns)
+
+        for i in range(len_cols):
+            list_abnormaly_date = []
+            sr = df_cap_pct_chg.iloc[:, i]
+            sr_abnormaly = sr[(sr < LIMIT_PCT_CHG_RANGE[0]) | (sr > LIMIT_PCT_CHG_RANGE[1])]
+            list_abnormaly_date = list_abnormaly_date + list(sr_abnormaly.index)
+
+        count_loop = len(list_abnormaly_date) / 2
+
+        LIMIT_PCT_CHG_RANGE = [-30, 30]
+
+        len_cols = len(df_cap_pct_chg.columns)
+
+        # df_cap_total의 column 별로 수직적 분석을 하기 위한 loop
+        for i in range(len_cols):
+            list_abnormaly_date = []
+            sr = df_cap_pct_chg.iloc[:, i]
+            # 전일대비 pct_chg가 -30%, +30%를 넘을때 그때의 날짜를 저장
+            sr_abnormaly = sr[(sr < LIMIT_PCT_CHG_RANGE[0]) | (sr > LIMIT_PCT_CHG_RANGE[1])]
+            list_abnormaly_date = list_abnormaly_date + list(sr_abnormaly.index)
+
+            # 날짜가 ["2015-01-01","2015-01-05", "2016-03-05","2016-04-07"] 이렇게 나온다면,
+            # 2015-01-05 데이터로 2015-01-01 ~ 2015-01-05의 데이터를 채워버린다.
+            # 2016-04-07 데이터로 2016-03-05 ~ 2016-04-07의 데이터를 채워버린다.
+            # Anormaly detection에 대해서 알아보기.
+
+            if len(list_abnormaly_date) % 2 != 0:
+                raise ValueError("Unexpected value got. You have to how these inputs get in.")
+
+            count_loop = int(len(list_abnormaly_date) / 2)
+            for j in range(count_loop):
+                df_cap_total[list_abnormaly_date[j * 2]: list_abnormaly_date[j * 2 + 1]][:-1].iloc[:, i] \
+                    = df_cap_total[list_abnormaly_date[j * 2]: list_abnormaly_date[j * 2 + 1]].iloc[-1, i]
+
+        if csd_trea == True:
+            return df_cap_total.iloc[:,1]
+        elif csd_trea == False:
+            return df_cap_total.iloc[:, 0]
+
+
+
+
+
+
+
+
+
+
+
 
 
     # def getHistoricalPBR(self, code, start_date, end_date):
