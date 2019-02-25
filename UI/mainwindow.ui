@@ -247,6 +247,32 @@
      </property>
     </widget>
    </widget>
+   <widget class="QLabel" name="label_fix_cap">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>410</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>시가총액 보정</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="check_fix_cap">
+    <property name="geometry">
+     <rect>
+      <x>165</x>
+      <y>413</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
    <zorder>groupBox</zorder>
    <zorder>label_code</zorder>
    <zorder>label_start</zorder>
@@ -260,6 +286,8 @@
    <zorder>edit_years_range</zorder>
    <zorder>check_treasury</zorder>
    <zorder>label_cap_treasury</zorder>
+   <zorder>label_fix_cap</zorder>
+   <zorder>check_fix_cap</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

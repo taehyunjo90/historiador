@@ -60,12 +60,13 @@ class MyWindow(QMainWindow, form_class):
     def btn_clicked(self):
 
         # Inputs
-
         code = str(self.edit_code.text())
         start_date = qtDateToString(self.edit_start.date())
         end_date = qtDateToString(self.edit_end.date())
         range_years = self.edit_years_range.value()
         bool_csd_trea = self.check_treasury.isChecked()
+        bool_fix_cap = self.check_fix_cap.isChecked()
+
 
         # Check input Integrity
         if checkCodes(code, self.hs.dp.df_codeinfo)[0] == False:
@@ -75,35 +76,35 @@ class MyWindow(QMainWindow, form_class):
         self.statusBar.showMessage("데이터를 찾고 있습니다...")
         # Check RadioButton
         if self.button_PBR.isChecked():
-            self.runPBR(code, start_date, end_date, bool_csd_trea)
+            self.runPBR(code, start_date, end_date, bool_csd_trea, bool_fix_cap)
             # QMessageBox.about(self, "test", "PBR SELECTED")
         elif self.button_PBRROE.isChecked():
-            self.runPBRROE(code, start_date, end_date, range_years, bool_csd_trea)
+            self.runPBRROE(code, start_date, end_date, range_years, bool_csd_trea, bool_fix_cap)
             # QMessageBox.about(self, "test", "PBRROE SELECTED")
         elif self.button_PER.isChecked():
-            self.runPER(code, start_date, end_date, range_years, bool_csd_trea)
+            self.runPER(code, start_date, end_date, range_years, bool_csd_trea, bool_fix_cap)
             # QMessageBox.about(self, "test", "PER SELECTED")
         else:
             QMessageBox.about(self, "Error", "지표를 선택해주십시오.")
 
-    def runPBR(self, code, start_date, end_date, csd_trea):
-        df_process = self.hs.getHistoricalPBR(code, start_date, end_date, csd_trea)
+    def runPBR(self, code, start_date, end_date, csd_trea, fixcap):
+        df_process = self.hs.getHistoricalPBR(code, start_date, end_date, csd_trea, fixcap)
         sr_to_plot = df_process.loc[:,'PBR']
         x = sr_to_plot.index
         y = sr_to_plot.values
         self.drawOneYChart(x,y, "PBR")
         self.statusBar.showMessage("완료")
 
-    def runPER(self, code, start_date, end_date, range_years, csd_trea):
-        df_process = self.hs.getHistoricalPER(code, start_date, end_date, range_years, csd_trea)
+    def runPER(self, code, start_date, end_date, range_years, csd_trea, fixcap):
+        df_process = self.hs.getHistoricalPER(code, start_date, end_date, range_years, csd_trea, fixcap)
         sr_to_plot = df_process.loc[:,'PER']
         x = sr_to_plot.index
         y = sr_to_plot.values
         self.drawOneYChart(x,y, "PER")
         self.statusBar.showMessage("완료")
 
-    def runPBRROE(self, code, start_date, end_date, range_years, csd_trea):
-        df_process = self.hs.getHistoricalPBRandROE(code, start_date, end_date, range_years, csd_trea)
+    def runPBRROE(self, code, start_date, end_date, range_years, csd_trea, fixcap):
+        df_process = self.hs.getHistoricalPBRandROE(code, start_date, end_date, range_years, csd_trea, fixcap)
         sr_to_plot_one = df_process.loc[:,'PBR']
         sr_to_plot_two = df_process.loc[:,'ROE']
 
@@ -135,19 +136,6 @@ class MyWindow(QMainWindow, form_class):
 
         self.canvas.draw()
         self.fig.clear()  # fig에서 삭제해줌 -> 실제로 보이는 건 삭제 되진 않으나 다시 self.cavas.draw() 할때 겹치지 않음
-
-        #
-        # df_process = self.hs.getHistoricalPBRandROE(code, start_date, end_date, range_years, csd_trea=True)
-        # ax1 = self.fig.add_subplot(111)
-        # ax2 = ax1.twinx()
-        # ax1.plot(df_process.loc[:, 'PBR'].index, df_process.loc[:, 'PBR'].values, 'g-')
-        # ax2.plot(df_process.loc[:, 'ROE'].index, df_process.loc[:, 'ROE'].values, 'b-')
-        #
-        # ax1.set_xlabel('Times')
-        # ax1.set_ylabel('PBR', color='g')
-        # ax2.set_ylabel('ROE', color='b')
-        # self.canvas.draw()
-
 
 
 if __name__ == "__main__":
